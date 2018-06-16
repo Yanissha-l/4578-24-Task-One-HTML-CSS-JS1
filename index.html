@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style>
+        main {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            margin-right: 20px;
+            margin-left: 20px;
+        }
+
+        body {
+            margin: 0;
+            padding: 1rem;
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            width: 90%;
+        }
+
+        label {
+            padding: .5rem;
+            width: 45%;
+        }
+
+        input {
+            padding: .5rem 1rem;
+            margin-bottom: .5rem;
+            width: 40%;
+            -webkit-appearance: none;
+        }
+
+        input[type=submit] {
+            font-weight: bold;
+            width: 35%;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        .normal {
+            color: black;
+            font-weight: bold;
+        }
+
+        .canvas-obj {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .myCanvas {
+            outline: black 3px solid;
+            width: 600px;
+            height: 350px;
+        }
+
+        .clear {
+            padding: 10px 0px 10px 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div>
+            <h3>You can enter just positive integer number</h1>
+                <form>
+                    <label for="rib_a">Rib A</label>
+                    <input type="text" name="rib_a" id="rib_a">
+                    <label for="rib_b">Rib B</label>
+                    <input type="text" name="rib_b" id="rib_b">
+                    <label for="point_x">X (from 0 up to 300)</label>
+                    <input type="text" name="point_x" id="point_x">
+                    <label for="point_y">Y ( from 0 up to 150)</label>
+                    <input type="text" name="point_y" id="point_y">
+                    <label for="square" id="square">Square area:</label>
+                    <input type="submit" value="draw" name="draw" class="btn btn-primary">
+                </form>
+        </div>
+        <div class="canvas-obj">
+            <h3>Drowing On Canvas!</h3>
+            <canvas class="myCanvas" onclick="drawByClick(event)"></canvas>
+            <button type="submit" class="btn btn-success clear">Clear</button>
+        </div>
+    </main>
+    <script>
+        var canvas = document.querySelector('.myCanvas');
+        var context = canvas.getContext('2d');
+        var clickX = -1;
+        var clickY = -1;
+        var ribGlobalA = -1;
+        var ribGlobalB = -1;
+
+        var draw = document.querySelector('form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            var form = event.target;
+
+            var ribA = form.querySelector('[name=rib_a]');
+            var ribB = form.querySelector('[name=rib_a]');
+            var pointX = form.querySelector('[name=point_x]');
+            var pointY = form.querySelector('[name=point_y]');
+            var result = document.querySelector('#square');
+
+            if (!checkDigit(ribA.value) || !checkDigit(ribB.value) || !checkDigit(pointX.value) || !checkDigit(pointY.value)) {
+                result.classList.remove('normal');
+                result.classList.add('error');
+                result.textContent = 'Error: Incorrect number format or a negative number entered';
+            } else if (!checkBorder(ribA.value, pointX.value, canvas.width) || !checkBorder(ribB.value, pointY.value, canvas.height)) {
+                result.classList.remove('normal');
+                result.classList.add('error');
+                result.textContent = 'Error: Incorrect input, the square is cross over the canvas\'s borders';
+            } else {
+                var square = ribA.value * ribB.value;
+                ribGlobalA = ribA.value;
+                ribGlobalB = ribB.value;
+                result.classList.remove('error');
+                result.classList.add('normal');
+                result.textContent = 'Square area: ' +  square;
+                drawFigure(pointX.value, pointY.value, ribA.value, ribB.value);
+            }
+        })
+
+        var btnEven = document.querySelector('.clear');
+        btnEven.addEventListener('click', function () {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        })        
+
+        function drawByClick(event) {
+            clickX = event.offsetX/2;
+            clickY = event.offsetY/2.3;
+            var result = document.querySelector('#square');
+            
+            if(ribGlobalA === -1 || ribGlobalB === -1) {
+                var ribA = 20;
+                var ribB = 20;
+            } else {
+                var ribA = ribGlobalA;
+                var ribB = ribGlobalB;
+            }
+
+            if (!checkBorder(ribA, clickX, canvas.width) || !checkBorder(ribB, clickY, canvas.height)) {
+                result.classList.remove('normal');
+                result.classList.add('error');
+                result.textContent = 'Error: Incorrect input, the square is cross over the canvas\'s borders';
+            } else {
+                var square = ribA * ribB;    
+                result.classList.remove('error');
+                result.classList.add('normal');
+                result.textContent = 'Square area: ' +  square;
+                drawFigure(clickX, clickY, ribA, ribB);
+            } 
+        } 
+
+        function checkBorder(start, side, maxLength) {
+            if(Number(start) + Number(side) > Number(maxLength))                
+                return false;
+            return true; 
+        }
+
+        function checkDigit(num) {
+            var reg = new RegExp('^[0-9]*$'); {
+                if (!reg.test(num)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        function drawFigure(startX, StartY, SideX, SideY) {
+            context.beginPath();
+            context.rect(startX, StartY, SideX, SideY);
+            context.closePath();
+            context.lineWidth = 0.5;
+            context.stroke();                 
+        }
+
+    </script>
+</body>
+
+</html>
